@@ -42,6 +42,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
+            "/auth/new_accessToken",
             "/swagger-ui.html",
             "/oauth2/**",
             "/swagger-ui/**",

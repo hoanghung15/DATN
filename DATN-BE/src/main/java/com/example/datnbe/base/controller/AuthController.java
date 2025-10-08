@@ -9,9 +9,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,6 +33,11 @@ public class AuthController {
     @PostMapping("logout")
     public ApiResponse<AuthResponse> logout(HttpServletRequest request) {
         return authService.logout(request);
+    }
+
+    @GetMapping("/new_accessToken")
+    public ApiResponse<AuthResponse> newAccessToken(@RequestParam String token) {
+        return authService.getNewToken(token);
     }
 
 }

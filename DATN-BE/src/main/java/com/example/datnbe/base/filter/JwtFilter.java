@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -44,7 +45,15 @@ public class JwtFilter extends OncePerRequestFilter {
                 User user = userRepository.findByUsername((username));
                 UserDetails userDetails = new CustomUserDetails(user);
 
-                List<String> listTokenStored = tokenService.getTokenFromRedis(username);
+                List<String> listTokenStored = new ArrayList<>();
+                String accessTokenFromRedis = tokenService.getTokenFromRedis("access", username);
+                String refreshTokenFromRedis = tokenService.getTokenFromRedis("refresh", username);
+                if (accessTokenFromRedis != null) {
+                    listTokenStored.add(accessTokenFromRedis);
+                }
+                if (refreshTokenFromRedis != null) {
+                    listTokenStored.add(refreshTokenFromRedis);
+                }
                 if (listTokenStored != null && listTokenStored.contains(accessToken) && jwtService.validateToken(accessToken, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

@@ -2,6 +2,7 @@ package com.example.datnbe.base.service;
 
 
 import com.example.datnbe.Enum.ProviderEnum;
+import com.example.datnbe.base.custom.CustomUserDetails;
 import com.example.datnbe.base.entity.User;
 import com.example.datnbe.base.repository.UserRepository;
 import com.example.datnbe.dto.request.LoginRequest;
@@ -15,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,13 +60,14 @@ public class AuthService {
             accessToken = jwtServiceImpl.generateToken(user, true, accessExpire);
             refreshToken = jwtServiceImpl.generateToken(user, false, refreshExpire);
 
-            tokenService.saveTokenInRedis(user.getUsername(), accessToken, accessExpiration);
-            tokenService.saveTokenInRedis(user.getUsername(), refreshToken, refreshExpiration);
-            log.info("User's Token in Redis: {}", tokenService.getTokenFromRedis(user.getUsername()));
+            tokenService.saveTokenInRedis("access", user.getUsername(), accessToken, accessExpiration);
+            tokenService.saveTokenInRedis("refresh", user.getUsername(), refreshToken, refreshExpiration);
+            log.info("User's Token in Redis: {}", tokenService.getTokenFromRedis("access", user.getUsername()));
 
             AuthResponse authResponse = AuthResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .role(user.getRole().toString())
                     .build();
             return ApiResponse.<AuthResponse>builder()
                     .code(200)
@@ -82,11 +85,33 @@ public class AuthService {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             String username = jwtServiceImpl.extractUsername(token);
-            tokenService.deleteTokenFromRedis(username);
+            tokenService.deleteTokenFromRedis("access", username);
+            tokenService.deleteTokenFromRedis("refresh", username);
         }
         return ApiResponse.builder()
                 .code(200)
                 .message("Log-out successfully")
+                .build();
+    }
+
+    public ApiResponse getNewToken(String token) {
+        String accessToken = "";
+
+        String username = jwtServiceImpl.extractUsername(token);
+        User user = userRepository.findByUsername(username);
+
+        UserDetails userDetails = new CustomUserDetails(user);
+
+        boolean checkToken = jwtServiceImpl.validateToken(token, userDetails);
+
+        if (checkToken) {
+            accessToken = jwtServiceImpl.generateToken(user, true, accessExpire);
+            tokenService.saveTokenInRedis("access", user.getUsername(), accessToken, accessExpiration);
+        }
+        return ApiResponse.builder()
+                .code(200)
+                .message("Get new access token successfully")
+                .result(accessToken)
                 .build();
     }
 }
