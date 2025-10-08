@@ -16,4 +16,22 @@ public class GlobalException {
                 .build();
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
+    @ExceptionHandler(UserExistedException.class)
+    ResponseEntity<ApiResponse> handleUserExisted(RuntimeException e) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(400)
+                .message(e.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @ExceptionHandler(ErrorResetPassword.class)
+    ResponseEntity<ApiResponse> handleErrorResetPassword(RuntimeException e) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(400)
+                .message(e.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
 }

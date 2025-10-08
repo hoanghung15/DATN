@@ -6,8 +6,10 @@ import com.example.datnbe.base.custom.CustomUserDetails;
 import com.example.datnbe.base.entity.User;
 import com.example.datnbe.base.repository.UserRepository;
 import com.example.datnbe.dto.request.LoginRequest;
+import com.example.datnbe.dto.request.ResetPassRequest;
 import com.example.datnbe.dto.response.ApiResponse;
 import com.example.datnbe.dto.response.AuthResponse;
+import com.example.datnbe.exception.ErrorResetPassword;
 import com.example.datnbe.exception.LoginInfoNotCorrect;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
@@ -17,8 +19,11 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -45,6 +50,7 @@ public class AuthService {
     PasswordEncoder passwordEncoder;
     JwtServiceImpl jwtServiceImpl;
     TokenService tokenService;
+    MailService mailService;
 
     public ApiResponse<AuthResponse> login(LoginRequest authRequest) {
         boolean checkUsername = userRepository.existsByUsername(authRequest.getUsername());
@@ -114,4 +120,40 @@ public class AuthService {
                 .result(accessToken)
                 .build();
     }
+
+    public ApiResponse resetPassword(ResetPassRequest request) {
+        User user = userRepository.findByUsername(request.getUsername());
+        boolean checkCurrentPassword = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
+        boolean checkNewPassword = request.getNewPassword().equals(request.getConfirmNewPassword());
+        if(checkCurrentPassword && checkNewPassword) {
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            return ApiResponse.builder()
+                    .code(200)
+                    .message("Reset password successfully")
+                    .build();
+        }
+        else {
+            throw  new ErrorResetPassword("Error reset password");
+        }
+    }
+
+    public void getNewPassword(String username) {
+        User user = userRepository.findByUsername(username);
+        String newPassword = generateRandomPassword(8);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        mailService.sendResetPasswordMail(user.getEmail(), newPassword);
+    }
+
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$!";
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
 }

@@ -2,6 +2,7 @@ package com.example.datnbe.base.controller;
 
 import com.example.datnbe.base.service.AuthService;
 import com.example.datnbe.dto.request.LoginRequest;
+import com.example.datnbe.dto.request.ResetPassRequest;
 import com.example.datnbe.dto.response.ApiResponse;
 import com.example.datnbe.dto.response.AuthResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,9 +36,22 @@ public class AuthController {
         return authService.logout(request);
     }
 
-    @GetMapping("/new_accessToken")
+    @GetMapping("/new-accessToken")
     public ApiResponse<AuthResponse> newAccessToken(@RequestParam String token) {
         return authService.getNewToken(token);
     }
 
+    @PostMapping("/get-new-password")
+    public ApiResponse resetPassword(@RequestParam String username) {
+        authService.getNewPassword(username);
+        return ApiResponse.builder()
+                .code(200)
+                .message("Reset Password Success")
+                .build();
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse resetPassword(@RequestBody ResetPassRequest request) {
+        return authService.resetPassword(request);
+    }
 }
