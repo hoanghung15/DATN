@@ -2,6 +2,7 @@ package com.example.datnbe.base.entity;
 
 import com.example.datnbe.Enum.ProviderEnum;
 import com.example.datnbe.Enum.Role;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,6 +31,9 @@ public class User {
     String email;
     String password;
     String image;
+
+    @Column(nullable = false)
+    boolean enabled = false;
 
     Role role;
     ProviderEnum provider;
