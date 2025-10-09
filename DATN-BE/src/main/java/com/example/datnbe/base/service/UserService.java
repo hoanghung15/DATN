@@ -51,7 +51,7 @@ public class UserService {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(1));
         validateTokenRepo.save(verificationToken);
 
         String verifyLink = PREFIX_URL_MAIL + token;
