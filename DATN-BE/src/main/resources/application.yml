@@ -48,3 +48,7 @@ jwt:
     expire: 3600
   refresh:
     expire: 7200
+
+server-deploy:
+  server-python: http://47.128.147.4:5000/upload
+  server-python-test: http://localhost:5000/upload
