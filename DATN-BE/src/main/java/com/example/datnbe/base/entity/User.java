@@ -38,5 +38,9 @@ public class User {
     Role role;
     ProviderEnum provider;
 
+    String firstName;
+    String lastName;
+    String imageUrl;
+
 
 }
