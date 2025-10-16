@@ -34,4 +34,13 @@ public class GlobalException {
                 .build();
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
+    @ExceptionHandler(ErrorCreateUser.class)
+    ResponseEntity<ApiResponse> handleErrorCreateUser(RuntimeException e) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(400)
+                .message(e.getMessage())
+                .build();
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
 }

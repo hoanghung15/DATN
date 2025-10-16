@@ -8,6 +8,7 @@ import com.example.datnbe.base.repository.UserRepository;
 import com.example.datnbe.base.repository.ValidateTokenRepo;
 import com.example.datnbe.dto.request.UserCreationRequest;
 import com.example.datnbe.dto.response.ApiResponse;
+import com.example.datnbe.exception.ErrorCreateUser;
 import com.example.datnbe.exception.UserExistedException;
 import com.example.datnbe.mapper.CommonMapper;
 import jakarta.transaction.Transactional;
@@ -35,9 +36,14 @@ public class UserService {
     public ApiResponse createUser(UserCreationRequest request) {
         boolean checkEmail = userRepository.existsByEmail((request.getEmail()));
         boolean checkUsername = userRepository.existsByUsername(((request.getUsername())));
+        boolean checkPassword = request.getPassword().equals(request.getConfirmPassword());
 
         if (checkEmail || checkUsername) {
             throw new UserExistedException("User existed");
+        }
+
+        if(!checkPassword) {
+            throw  new ErrorCreateUser("Thông tin không chính xác");
         }
 
         User user = commonMapper.toUser(request);
