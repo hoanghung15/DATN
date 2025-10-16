@@ -32,5 +32,5 @@ public class UserCreationRequest {
     String lastName;
 
     @NotNull
-    String imageUrl;
+    String image;
 }

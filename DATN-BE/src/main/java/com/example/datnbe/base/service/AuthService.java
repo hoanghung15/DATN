@@ -59,6 +59,10 @@ public class AuthService {
         }
 
         User user = userRepository.findByUsernameAndProvider(authRequest.getUsername(), ProviderEnum.LOCAL).orElse(null);
+        boolean checkActive = user.isEnabled();
+        if (!checkActive) {
+            throw new RuntimeException("Your account is inactive");
+        }
         boolean checkPassword = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
         String accessToken = "";
         String refreshToken = "";
@@ -125,16 +129,15 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername());
         boolean checkCurrentPassword = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
         boolean checkNewPassword = request.getNewPassword().equals(request.getConfirmNewPassword());
-        if(checkCurrentPassword && checkNewPassword) {
+        if (checkCurrentPassword && checkNewPassword) {
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
             return ApiResponse.builder()
                     .code(200)
                     .message("Reset password successfully")
                     .build();
-        }
-        else {
-            throw  new ErrorResetPassword("Error reset password");
+        } else {
+            throw new ErrorResetPassword("Error reset password");
         }
     }
 

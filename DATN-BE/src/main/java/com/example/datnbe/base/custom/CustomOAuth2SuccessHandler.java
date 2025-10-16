@@ -63,6 +63,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             user.setImage(picture);
             user.setRole(Role.USER);
             user.setProvider(providerEnum);
+            user.setEnabled(true);
             userRepository.save(user);
         }
 

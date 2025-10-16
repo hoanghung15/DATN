@@ -52,7 +52,10 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/webjars/**",
-            "/face/**"
+            "/face/**",
+            "/login/**",
+            "/login/oauth2/**",
+            "/oauth2/**"
     };
 
     @Bean
