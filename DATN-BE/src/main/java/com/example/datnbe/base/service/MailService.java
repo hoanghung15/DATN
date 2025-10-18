@@ -80,7 +80,7 @@ public class MailService {
             message.setSubject("OTP");
             message.setText("Your OTP is: " + otp);
             mailSender.send(message);
-            log.info("Sent OTP mail to {}", email);
+            log.info("Sent OTP mail to {}", email + " " +  otp);
         } catch (Exception e) {
             e.printStackTrace();
         }
