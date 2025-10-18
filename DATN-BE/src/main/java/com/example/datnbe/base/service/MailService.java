@@ -5,13 +5,16 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -60,5 +63,27 @@ public class MailService {
         message.setSubject("OTP");
         message.setText("Your OTP is: " + otp);
         mailSender.send(message);
+    }
+
+    @KafkaListener(topics = "confirm-account-topic", groupId = "confirm-account-group")
+    public void sendOTPByKafka(String messageFromKafka) {
+        try {
+            String[] parts = messageFromKafka.split("-", 2);
+            if (parts.length < 2) {
+                throw new IllegalArgumentException("Invalid message format");
+            }
+
+            String email = parts[0].trim();
+            String otp = parts[1].trim();
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("OTP");
+            message.setText("Your OTP is: " + otp);
+            mailSender.send(message);
+            log.info("Sent OTP mail to {}", email);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

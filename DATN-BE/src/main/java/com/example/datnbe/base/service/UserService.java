@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class UserService {
     MailService mailService;
     TokenService tokenService;
     AuthService authService;
+    KafkaTemplate<String, String> kafkaTemplate;
 
     @Transactional
     public ApiResponse createUser(UserCreationRequest request) {
@@ -63,7 +65,11 @@ public class UserService {
 
         String otp = authService.generateOTP();
         tokenService.saveOTPInRedis(user.getUsername(), otp, otpExpire);
-        mailService.sendOTP(request.getEmail(), otp);
+        if (user != null) {
+            String message = user.getEmail() + "-" + otp;
+            kafkaTemplate.send("confirm-account-topic", message);
+        }
+
 
         return ApiResponse.builder()
                 .code(201)
