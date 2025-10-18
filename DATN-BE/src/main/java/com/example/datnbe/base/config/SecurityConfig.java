@@ -46,6 +46,8 @@ public class SecurityConfig {
             "/auth/reset-password",
             "/auth/verify",
             "/auth/get-new-password",
+            "/auth/verify-otp",
+            "/auth/get-new-otp",
             "/swagger-ui.html",
             "/oauth2/**",
             "/swagger-ui/**",

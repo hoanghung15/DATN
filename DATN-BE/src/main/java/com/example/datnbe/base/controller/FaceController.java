@@ -2,6 +2,7 @@ package com.example.datnbe.base.controller;
 
 import com.example.datnbe.base.service.FaceService;
 import com.example.datnbe.dto.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,6 +34,7 @@ import java.io.IOException;
 public class FaceController {
     FaceService faceService;
 
+    @Operation(summary = "Recognize your face", description = "Recognize your face")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse uploadToFlask(@RequestParam("file") MultipartFile file) throws IOException {
         return faceService.getIdByFace(file);

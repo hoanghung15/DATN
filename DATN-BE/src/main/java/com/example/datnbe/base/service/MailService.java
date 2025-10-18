@@ -53,4 +53,12 @@ public class MailService {
             throw new RuntimeException("Lỗi gửi email xác thực", e);
         }
     }
+
+    public void sendOTP(String email, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("OTP");
+        message.setText("Your OTP is: " + otp);
+        mailSender.send(message);
+    }
 }

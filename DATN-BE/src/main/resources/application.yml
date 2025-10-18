@@ -5,7 +5,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: hungaovai15122003@gmail.com
-    password: "iupu zgpm cdmw bcar"  # App Password
+    password: "iupu zgpm cdmw bcar"
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -48,6 +48,10 @@ jwt:
     expire: 3600
   refresh:
     expire: 7200
+
+otp:
+  expire: 300
+  lock-account: 300
 
 server-deploy:
   server-python: http://47.128.147.4:5000/upload

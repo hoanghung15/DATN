@@ -7,6 +7,7 @@ import com.example.datnbe.base.entity.User;
 import com.example.datnbe.base.repository.UserRepository;
 import com.example.datnbe.dto.request.LoginRequest;
 import com.example.datnbe.dto.request.ResetPassRequest;
+import com.example.datnbe.dto.request.VerifyOTPRequest;
 import com.example.datnbe.dto.response.ApiResponse;
 import com.example.datnbe.dto.response.AuthResponse;
 import com.example.datnbe.exception.ErrorResetPassword;
@@ -23,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 @Slf4j
@@ -45,6 +47,14 @@ public class AuthService {
     @NonFinal
     @Value("${jwt.refresh.expire}")
     int refreshExpiration;
+
+    @NonFinal
+    @Value("${otp.expire}")
+    int otpExpire;
+
+    @NonFinal
+    @Value("${otp.lock-account}")
+    int lockAccountExpire;
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
@@ -141,6 +151,66 @@ public class AuthService {
         }
     }
 
+    public ApiResponse verifyOTP(VerifyOTPRequest request) {
+        String username = request.getUsername();
+        String otp = request.getOtp();
+
+        if(tokenService.isOTPLocked(username)) {
+            if (tokenService.isOTPLocked(username)) {
+                return ApiResponse.builder()
+                        .code(429)
+                        .message("You have entered wrong OTP too many times. Please try again after 10 minutes.")
+                        .build();
+            }
+        }
+
+        boolean checkVerify = verifyOTP(request.getUsername(), request.getOtp());
+        log.info(String.valueOf(verifyOTP(request.getUsername(), request.getOtp())));
+        if (checkVerify) {
+            User user = userRepository.findByUsername(request.getUsername());
+            user.setEnabled(true);
+            userRepository.save(user);
+            log.info(user.toString());
+
+            tokenService.deleteOTPFromRedis(user.getUsername());
+            tokenService.resetOTPAttempt(user.getUsername());
+            tokenService.unlockOTP(user.getUsername());
+
+            return ApiResponse.builder()
+                    .code(200)
+                    .message("Verify OTP successfully")
+                    .result(checkVerify)
+                    .build();
+        }else {
+            tokenService.increaseOTPAttempt(username, otpExpire);
+            int attempt = tokenService.getOTPAttemptFromRedis(username);
+
+            if(attempt >= 5){
+                tokenService.lockOTP(username , lockAccountExpire);
+                return ApiResponse.builder()
+                        .code(429)
+                        .message("You have entered wrong OTP 5 times. Please try again after 10 minutes.")
+                        .build();
+            }
+        }
+
+        return ApiResponse.builder()
+                .code(400)
+                .message("Invalid OTP")
+                .build();
+    }
+
+    public boolean verifyOTP(String username, String otp) {
+        String OPTInRedis = tokenService.getOTPFromRedis(username);
+        if (OPTInRedis == null) {
+            return false;
+        }
+        if (!OPTInRedis.equals(otp)) {
+            return false;
+        }
+        return true;
+    }
+
     public void getNewPassword(String username) {
         User user = userRepository.findByUsername(username);
         String newPassword = generateRandomPassword(8);
@@ -157,6 +227,23 @@ public class AuthService {
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
         return sb.toString();
+    }
+
+    public String generateOTP() {
+        SecureRandom random = new SecureRandom();
+        int otp = 100 + random.nextInt(9000);
+        return String.valueOf(otp);
+    }
+
+    public ApiResponse getNewOTP(String username) {
+        String newOTP = generateOTP();
+        User user = userRepository.findByUsername(username);
+        mailService.sendOTP(user.getEmail(), newOTP);
+        tokenService.saveOTPInRedis(username, newOTP, otpExpire);
+        return ApiResponse.builder()
+                .code(200)
+                .message("Get new OTP successfully")
+                .build();
     }
 
 }

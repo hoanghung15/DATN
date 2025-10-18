@@ -15,9 +15,12 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,14 +28,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
-    final static String PREFIX_URL_MAIL = "http://localhost:8080/auth/verify?token=";
+
+    @NonFinal
+    @Value("${otp.expire}")
+    int otpExpire;
 
     CommonMapper commonMapper;
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
-    ValidateTokenRepo validateTokenRepo;
-    private final MailService mailService;
-@Transactional
+    MailService mailService;
+    TokenService tokenService;
+    AuthService authService;
+
+    @Transactional
     public ApiResponse createUser(UserCreationRequest request) {
         boolean checkEmail = userRepository.existsByEmail((request.getEmail()));
         boolean checkUsername = userRepository.existsByUsername(((request.getUsername())));
@@ -42,8 +50,8 @@ public class UserService {
             throw new UserExistedException("User existed");
         }
 
-        if(!checkPassword) {
-            throw  new ErrorCreateUser("Thông tin không chính xác");
+        if (!checkPassword) {
+            throw new ErrorCreateUser("Login Info Not Correct");
         }
 
         User user = commonMapper.toUser(request);
@@ -53,15 +61,9 @@ public class UserService {
         user.setProvider(ProviderEnum.LOCAL);
         userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(1));
-        validateTokenRepo.save(verificationToken);
-
-        String verifyLink = PREFIX_URL_MAIL + token;
-        mailService.sendVerificationEmail(request.getEmail(), verifyLink);
+        String otp = authService.generateOTP();
+        tokenService.saveOTPInRedis(user.getUsername(), otp, otpExpire);
+        mailService.sendOTP(request.getEmail(), otp);
 
         return ApiResponse.builder()
                 .code(201)

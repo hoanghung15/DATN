@@ -40,4 +40,20 @@ public class User {
 
     String firstName;
     String lastName;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", image='" + image + '\'' +
+                ", enabled=" + enabled +
+                ", role=" + role +
+                ", provider=" + provider +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                '}';
+    }
 }
