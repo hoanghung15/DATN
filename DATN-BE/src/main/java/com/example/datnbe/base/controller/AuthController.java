@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
-@Tag(name = "auth-controller")
+@Tag(name = "[AUTH]")
 @RequestMapping("auth")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

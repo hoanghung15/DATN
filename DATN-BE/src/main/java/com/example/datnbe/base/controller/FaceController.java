@@ -3,6 +3,7 @@ package com.example.datnbe.base.controller;
 import com.example.datnbe.base.service.FaceService;
 import com.example.datnbe.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,6 +30,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/face")
+@Tag(name = "[FACE]")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FaceController {

@@ -1,9 +1,8 @@
 package com.example.datnbe.base.controller;
 
-import com.example.datnbe.base.service.UserService;
-import com.example.datnbe.dto.request.UserCreationRequest;
+import com.example.datnbe.base.service.GroupServiceImpl;
+import com.example.datnbe.dto.request.GroupCreateRequest;
 import com.example.datnbe.dto.response.ApiResponse;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -15,16 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "GROUP")
+@RequestMapping("group")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Tag(name = "[USER]")
-@RequestMapping("user")
-public class UserController {
-    UserService userService;
+public class GroupController {
+    GroupServiceImpl groupService;
 
-    @Operation(summary = "Create new User", description = "Create new User")
     @PostMapping
-    public ApiResponse createUser(@RequestBody UserCreationRequest userCreationRequest) {
-        return userService.createUser(userCreationRequest);
+    public ApiResponse createGroup(@RequestBody GroupCreateRequest request) {
+        return groupService.createNewGroup(request);
     }
+
 
 }

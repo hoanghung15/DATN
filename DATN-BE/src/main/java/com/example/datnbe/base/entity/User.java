@@ -2,11 +2,15 @@ package com.example.datnbe.base.entity;
 
 import com.example.datnbe.Enum.ProviderEnum;
 import com.example.datnbe.Enum.Role;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +18,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,8 +33,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    @Column(unique = true, nullable = false)
     String username;
+
+    @Column(unique = true, nullable = false)
     String email;
+
     String password;
     String image;
 
@@ -40,6 +50,12 @@ public class User {
 
     String firstName;
     String lastName;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Group> ownedGroups;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<GroupMember> memberships;
 
     @Override
     public String toString() {
