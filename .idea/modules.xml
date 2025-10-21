@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DATN.iml" filepath="$PROJECT_DIR$/.idea/DATN.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DATN-BE/DATN-BE.iml" filepath="$PROJECT_DIR$/DATN-BE/DATN-BE.iml" />
     </modules>
   </component>
 </project>

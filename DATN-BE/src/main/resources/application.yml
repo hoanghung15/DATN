@@ -48,9 +48,9 @@ spring:
 jwt:
   secret-key: Ipi5YXHFpgug4VPwBZzKmoM8347YyfAFIR8b10SmkyA9SqVGnCFqAX9pruv4pTWhGvhaSn3FW6/J/ULAENgnn+qYDiooP4j59I9eOWt5ilg=
   access:
-    expire: 3600
+    expire: 36000
   refresh:
-    expire: 7200
+    expire: 72000
 
 otp:
   expire: 300

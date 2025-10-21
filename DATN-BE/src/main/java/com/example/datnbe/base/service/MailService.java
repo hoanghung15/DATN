@@ -86,4 +86,12 @@ public class MailService {
         }
 
     }
+    @KafkaListener(topics = "notification-join-group-topic", groupId = "notification-join-group")
+    public void sendMailNotifyJoinGroup(String email, String content) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Invite Join Group");
+        message.setText(content);
+        mailSender.send(message);
+    }
 }

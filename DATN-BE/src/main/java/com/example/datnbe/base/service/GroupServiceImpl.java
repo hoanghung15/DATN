@@ -12,12 +12,15 @@ import com.example.datnbe.base.repository.GroupRepository;
 import com.example.datnbe.base.repository.UserRepository;
 import com.example.datnbe.dto.GroupDTO;
 import com.example.datnbe.dto.request.GroupCreateRequest;
+import com.example.datnbe.dto.request.InviteGroupRequest;
 import com.example.datnbe.dto.response.ApiResponse;
 import com.example.datnbe.mapper.CommonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,14 +35,45 @@ import java.util.Random;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GroupServiceImpl implements GroupService {
+
     GroupRepository groupRepository;
     GroupMemberRepository groupMemberRepository;
     CommonMapper commonMapper;
     UserRepository userRepository;
+    KafkaTemplate<String, String> kafkaTemplate;
 
+    @Override
+    public ApiResponse joinNewGroup(String groupCode) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username);
+
+        Group group = groupRepository.findByCode(groupCode).orElseThrow(() -> new RuntimeException("Group not found"));
+        boolean checkExist = groupMemberRepository.existsByUser_IdAndGroup_Id(user.getId(), group.getId());
+        if (checkExist) {
+            throw new RuntimeException("Exist info in database");
+        }
+        GroupMember groupMember = new GroupMember();
+
+        groupMember.setGroup(group);
+        groupMember.setUser(user);
+        groupMember.setRole(MemberRole.MEMBER);
+        groupMember.setStatus(MemberStatus.ACTIVE);
+
+        groupMemberRepository.save(groupMember);
+
+        return ApiResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("Successfully joined group")
+                .build();
+    }
+
+    @Override
     public ApiResponse createNewGroup(GroupCreateRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        boolean isPrivate = request.isPrivateGroup();
 
         String username = customUserDetails.getUsername();
         User user = userRepository.findByUsername(username);
@@ -49,6 +83,7 @@ public class GroupServiceImpl implements GroupService {
         group.setCode(generateCodeJoin(6));
         group.setIcon_color(generateIconColor());
         group.setText_color(generateTextColor(generateIconColor()));
+        group.set_private(isPrivate);
         group.setStatus(GroupStatus.ACTIVE);
 
         GroupMember groupMember = new GroupMember();
@@ -67,6 +102,33 @@ public class GroupServiceImpl implements GroupService {
                 .code(200)
                 .message("Group created successfully")
                 .result(groupDTO)
+                .build();
+    }
+
+    @Override
+    public ApiResponse inviteToGroup(InviteGroupRequest request) {
+        String groupCode = request.getGroupCode();
+        String emailAddress = request.getEmailAddress();
+        Group group = groupRepository.findByCode(groupCode).orElseThrow(() -> new RuntimeException("Group not found"));
+        User user = userRepository.findByEmail((emailAddress));
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        boolean checkExist = groupMemberRepository.existsByUser_IdAndGroup_Id(user.getId(), group.getId());
+        if (checkExist) {
+            throw new RuntimeException("Member already exists in this group");
+        }
+        GroupMember groupMember = new GroupMember();
+        groupMember.setGroup(group);
+        groupMember.setUser(user);
+        groupMember.setRole(MemberRole.MEMBER);
+        groupMember.setStatus(MemberStatus.ACTIVE);
+        kafkaTemplate.send("notification-join-group-topic", "Đây là thư mời");
+        groupMemberRepository.save(groupMember);
+
+        return ApiResponse.builder()
+                .code(HttpStatus.CREATED.value())
+                .message("Member joined successfully")
                 .build();
     }
 
