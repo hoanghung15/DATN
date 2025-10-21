@@ -64,6 +64,9 @@ public class Group {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupMember> members;
 
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Channel> channels;
+
     @Enumerated(EnumType.STRING)
     GroupStatus status;
 

@@ -15,6 +15,7 @@ import com.example.datnbe.dto.request.GroupCreateRequest;
 import com.example.datnbe.dto.request.InviteGroupRequest;
 import com.example.datnbe.dto.response.ApiResponse;
 import com.example.datnbe.mapper.CommonMapper;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,7 +42,9 @@ public class GroupServiceImpl implements GroupService {
     CommonMapper commonMapper;
     UserRepository userRepository;
     KafkaTemplate<String, String> kafkaTemplate;
+    ChannelServiceImpl channelService;
 
+    @Transactional
     @Override
     public ApiResponse joinNewGroup(String groupCode) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -69,6 +72,7 @@ public class GroupServiceImpl implements GroupService {
                 .build();
     }
 
+    @Transactional
     @Override
     public ApiResponse createNewGroup(GroupCreateRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -98,6 +102,8 @@ public class GroupServiceImpl implements GroupService {
         GroupDTO groupDTO = commonMapper.toGroupDTO(group);
         groupDTO.setOwner_id(user.getId());
 
+        channelService.createGeneralChannel(group);
+
         return ApiResponse.builder()
                 .code(200)
                 .message("Group created successfully")
@@ -105,6 +111,7 @@ public class GroupServiceImpl implements GroupService {
                 .build();
     }
 
+    @Transactional
     @Override
     public ApiResponse inviteToGroup(InviteGroupRequest request) {
         String groupCode = request.getGroupCode();
