@@ -15,16 +15,16 @@ spring:
       ddl-auto: update
     show-sql: true
   datasource:
-    url: "jdbc:mysql://localhost:3306/local"
+    url: "jdbc:mysql://mysql-container:3306/local"
     username: root
     password: root
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
 
   data:
     redis:
-      host: localhost
+      host: redis-container
       port: 6379
       timeout: 50000
   security:
