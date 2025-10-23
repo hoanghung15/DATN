@@ -1,0 +1,61 @@
+server:
+  port: 8080
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hungaovai15122003@gmail.com
+    password: "iupu zgpm cdmw bcar"
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  datasource:
+    url: "jdbc:mysql://mysql-container:3306/local"
+    username: root
+    password: root
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+  data:
+    redis:
+      host: redis-container
+      port: 6379
+      timeout: 50000
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GG_CLIENT_ID}
+            client-secret: ${GG_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+          facebook:
+
+            client-id: ${FB_CLIENT_ID}
+            client-secret: ${FB_CLIENT_SECRET}
+            scope:
+              - email
+              - public_profile
+
+jwt:
+  secret-key: Ipi5YXHFpgug4VPwBZzKmoM8347YyfAFIR8b10SmkyA9SqVGnCFqAX9pruv4pTWhGvhaSn3FW6/J/ULAENgnn+qYDiooP4j59I9eOWt5ilg=
+  access:
+    expire: 36000
+  refresh:
+    expire: 72000
+
+otp:
+  expire: 300
+  lock-account: 300
+
+server-deploy:
+  server-python: http://47.128.147.4:5000/upload
+  server-python-test: http://localhost:5000/upload
