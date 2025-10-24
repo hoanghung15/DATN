@@ -231,7 +231,7 @@ public class AuthService {
 
     public String generateOTP() {
         SecureRandom random = new SecureRandom();
-        int otp = 100 + random.nextInt(90000);
+        int otp = 10000 + random.nextInt(90000);
         return String.valueOf(otp);
     }
 

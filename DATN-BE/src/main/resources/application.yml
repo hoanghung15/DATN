@@ -9,13 +9,12 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
   datasource:
-    url: "jdbc:mysql://localhost:3306/local"
+    url: "jdbc:mysql://localhost:3307/local"
     username: root
     password: root
 
@@ -59,3 +58,8 @@ otp:
 server-deploy:
   server-python: http://47.128.147.4:5000/upload
   server-python-test: http://localhost:5000/upload
+
+gemini:
+  api:
+    key: AIzaSyDGMwFnROH8pUw64JfvZkasj2uLCjvIqUs
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
